@@ -116,8 +116,12 @@ http://localhost:8000/docs
 
 and use /result/{task_id} route for checking result.
 
+
+
 OR
 
 ```bash
 curl "http://localhost:8000/results/{task_id}"
 ```
+
+Additionally, you can also check the entire result in outputs folder in your repository with your task_id as file name.

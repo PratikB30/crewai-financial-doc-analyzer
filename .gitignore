@@ -1,6 +1,5 @@
 .venv
 .env
 static
-outputs/*
 __pycache__
 analysis_results.db
