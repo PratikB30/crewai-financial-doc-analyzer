@@ -2,7 +2,7 @@
 
 ## Bugs Fixed
 ### 1. LLM model not defined for the Agents
-- Defined a Google Cloud Console project to create a vertex-ai project using google's free credits.
+- Defined google-gemini as llm using a Google Cloud Console project to create a vertex-ai project using google's free credits.
 
 ### 2. Incomplete Investment Tool, Risk Tool classes in tools.py
 - Implemented functions within the classes to run both async and sync. Additionally added a tool for Verification as well.
@@ -27,8 +27,7 @@
 ## Features added 
 ### 1. Implemented Celery and Redis based queue system (Clery
 - Defined celery in celery_tasks.py which works with redis docker image.
-- Once a user uploads and hits the route, a id is generated through which he can check his result on another route /results/{task_id} to know the status of the analysis.
-  
+- Once a user uploads a financial doc and hits the route, a task_id is generated which can be used to check progress on a different route '/results/{task_id}'.
 ### 2. SQLachemy datbase integration for small scale production
 - Data is stored in a datbase "analysis_results.db".
 - User can access their analysis data anytime using the task_id generated during generation.
@@ -37,6 +36,9 @@
 - Specialized Focus: Each agent focuses on their specific expertise
 - Comprehensive Coverage: Multiple perspectives on the same data
 - Cross-Verification: All findings are verified against original source
+
+### 4. Containerized using Docker
+- Created a docker config for hassle free deployments.
 
 
 ##	Setup and usage instructions
@@ -47,6 +49,8 @@
 ```  
 ├── main.py                 # FastAPI application entry point, defines API endpoints.
 ├── celery_tasks.py         # Defines the Celery application and the background task for running the crew.
+├── Dockerfile           # Builds the Docker image for the application, installing dependencies and setting up the environment.
+├── docker-compose.yml   # Defines and orchestrates the application's services (web, celery worker, redis, etc.).
 ├── agents.py               # Defines the specialist AI agents (Financial Analyst, Risk Assessor, etc.).
 ├── tasks.py                # Defines the individual `Task` objects for each agent.
 ├── tools.py                # Contains custom `BaseTool` classes for agents (e.g., PDF reader).
@@ -58,6 +62,15 @@
 
 ### Running the System
 
+### Run via docker command 
+
+```
+docker-compose up --build
+```
+
+OR 
+
+### Run Locally
 1. Install package from requirements.txt
 
 ```
