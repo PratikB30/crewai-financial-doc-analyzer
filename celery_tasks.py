@@ -1,5 +1,9 @@
-import eventlet
-eventlet.monkey_patch()
+import sys
+import os
+
+if 'celery' in sys.argv[0] and 'worker' in sys.argv:
+    import eventlet
+    eventlet.monkey_patch()
 
 from celery import Celery
 from crewai import Crew, Process
@@ -8,11 +12,11 @@ from agents import financial_analyst, verifier, investment_advisor, risk_assesso
 from task import financial_analysis, verification, investment_analysis, risk_assessment
 from database import SessionLocal
 import models
-import os
+from dotenv import load_dotenv
+load_dotenv()
 
-# Configure Celery
-# Replace 'redis://localhost:6379/0' with your Redis server URL if different
-celery = Celery('tasks', broker='redis://localhost:6379/0')
+redis_url = os.getenv("REDIS_URL", "redis://localhost:6379/0")
+celery = Celery('tasks', broker=redis_url)
 
 @celery.task
 def run_crew_task(task_id: str, query: str, file_path: str):

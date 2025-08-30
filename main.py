@@ -1,11 +1,8 @@
-import eventlet
-eventlet.monkey_patch()
-
-
 from fastapi import FastAPI, File, UploadFile, Form, HTTPException, BackgroundTasks, Depends
 from fastapi.responses import JSONResponse
 import os
 import uuid
+from pathlib import Path
 from sqlalchemy.orm import Session
 import asyncio
 from crewai import Crew, Process
@@ -26,6 +23,9 @@ from database import SessionLocal, engine
 models.Base.metadata.create_all(bind=engine)
 
 app = FastAPI(title="Financial Document Analyzer")
+
+UPLOAD_DIRECTORY = Path("/app/data")
+UPLOAD_DIRECTORY.mkdir(parents=True, exist_ok=True)
 
 # Dependency to get the database session
 def get_db():
@@ -70,18 +70,19 @@ async def analyze_financial_doc(
     query: str = Form(default="Analyze this financial document for investment insights"),
     db: Session = Depends(get_db)
 ):
-    """Analyze financial document and provide comprehensive investment recommendations"""
     try:
         file_id = str(uuid.uuid4())
-        file_path = f"data/financial_document_{file_id}.pdf"
+        file_path_obj = UPLOAD_DIRECTORY / f"financial_document_{file_id}.pdf"
+
+        file_path_str = str(file_path_obj)
         
-        print(f"Generated file path: {file_path}")
+        print(f"Generated file path: {file_path_str}")
     
         # Ensure data directory exists
         os.makedirs("data", exist_ok=True)
         
         # Save uploaded file
-        with open(file_path, "wb") as f:
+        with open(file_path_obj, "wb") as f:
             content = await file.read()
             f.write(content)
             print(f"File saved successfully. Size: {len(content)} bytes")
@@ -91,7 +92,7 @@ async def analyze_financial_doc(
         db_task = models.TaskResult(
             task_id=task_id,
             status="PENDING",
-            file_path=file_path
+            file_path=file_path_str
         )
         db.add(db_task)
         db.commit()
@@ -100,7 +101,7 @@ async def analyze_financial_doc(
         
         # 3. Send the task to the Celery worker
         print("Sending task to Celery worker...")
-        run_crew_task.delay(task_id, query.strip(), file_path)
+        run_crew_task.delay(task_id, query.strip(), file_path_str)
         print("Task sent to Celery worker successfully")
 
         return {"message": "Analysis has been queued.", "task_id": task_id}
@@ -132,23 +133,18 @@ async def get_analysis_result(task_id: str, db: Session = Depends(get_db)):
     if db_task.status == "SUCCESS":
         try:
             # Ensure the outputs directory exists
-            output_dir = "outputs"
+            output_dir = Path("/app/outputs")
             os.makedirs(output_dir, exist_ok=True)
             
             # Define the output file path
-            output_file_path = os.path.join(output_dir, f"{task_id}.txt")
+            output_file_path = os.path.join(output_dir, f"{task_id}_result.txt")
             
             # Write the analysis result to the text file
             with open(output_file_path, "w", encoding="utf-8") as f:
                 f.write(db_task.result)
         except Exception as e:
-            
             # Optional: Log an error if saving fails, but don't block the response
             print(f"Warning: Could not save result to file for task {task_id}. Error: {e}")
 
     return {"status": "SUCCESS", "result": db_task.result}
 
-
-# if __name__ == "__main__":
-#     import uvicorn
-#     uvicorn.run(app, host="0.0.0.0", port=8000, reload=True)
