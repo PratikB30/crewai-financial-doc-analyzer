@@ -49,8 +49,8 @@
 ```  
 ├── main.py                 # FastAPI application entry point, defines API endpoints.
 ├── celery_tasks.py         # Defines the Celery application and the background task for running the crew.
-├── Dockerfile           # Builds the Docker image for the application, installing dependencies and setting up the environment.
-├── docker-compose.yml   # Defines and orchestrates the application's services (web, celery worker, redis, etc.).
+├── Dockerfile              # Builds the Docker image for the application, installing dependencies and setting up the environment.
+├── docker-compose.yml      # Defines and orchestrates the application's services (web, celery worker, redis, etc.).
 ├── agents.py               # Defines the specialist AI agents (Financial Analyst, Risk Assessor, etc.).
 ├── tasks.py                # Defines the individual `Task` objects for each agent.
 ├── tools.py                # Contains custom `BaseTool` classes for agents (e.g., PDF reader).
