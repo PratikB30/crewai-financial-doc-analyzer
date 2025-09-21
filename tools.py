@@ -16,7 +16,7 @@ class FinancialDocumentTool(BaseTool):
     name: str = "Financial Document Reader"
     description: str = "A tool to read the full content of a financial document from a given file path."
     
-    def _run(self, file_path: str = 'data/TSLA-Q2-2025-Update.pdf') -> str:
+    def _run(self, file_path: str = 'data/TSLA-Q2-2025-Update.pdf') -> str: #Default file path to 'TSLA....pdf' if no file uploaded
         """Tool to read data from a pdf file from a path"""
         
         full_report = ""
